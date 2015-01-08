@@ -1,0 +1,29 @@
+{
+  "name": "uniql-mongodb",
+  "version": "0.0.1",
+  "description": "Produces MongoDB queries from UniQL ASTs.",
+  "main": "src/compiler.js",
+  "scripts": {
+    "test": "mocha tests/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/honeinc/uniql-mongodb.git"
+  },
+  "keywords": [
+    "mongodb",
+    "query",
+    "ast",
+    "dsl"
+  ],
+  "author": "Andy Burke <aburke@bitflood.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/honeinc/uniql-mongodb/issues"
+  },
+  "devDependencies": {
+    "mocha": "~2.0.1"
+  },
+  "dependencies": {
+  }
+}
