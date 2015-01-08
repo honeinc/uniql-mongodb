@@ -1,77 +1,113 @@
 'use strict';
 
+var extend = require( 'extend' );
+
 module.exports = compile;
+
+function _identity( node ) {
+    return node.arguments[ 0 ];
+}
 
 var generators = {
     "NUMBER": function( node ) {
-        return node.arguments[ 0 ];
+        var value = _identity( node );
+        return value.indexOf( '.' ) < 0 ? parseInt( value, 10 ) : parseFloat( value );
     },
-    "STRING": function( node ) {
-        return '"' + node.arguments[ 0 ].replace( '"', '\\"' ) + '"';
-    },
-    "SYMBOL": function( node ) {
-        return '"' + node.arguments[ 0 ] + '"';
-    },
+    "STRING": _identity,
+    "SYMBOL": _identity,
     
     "-": function( node ) {
-        return -node.arguments[ 0 ];
+        return -_identity( node );
     },
     "&&": function( node ) {
-        var result = [];
+        var _and = {};
         node.arguments.forEach( function( _node ) {
-           result.push( _processNode( _node ) );
+           extend( _and, _processNode( _node ) );
         } );
-        return ' ' + result.join( ',\n' );
+        return _and;
     },
     "||": function( node ) {
-        var result = [];
+        var _or = {
+            $or: []
+        };
         node.arguments.forEach( function( _node ) {
-            result.push( ' { ' + _processNode( _node ) + '}' );
+            _or.$or.push( _processNode( _node ) );
         } );
-        return ' "$or": [ ' + result.join( ',\n' ) + ' ]\n'; 
+        return _or;
     },
     "IN": function( node ) {
         var value = _processNode( node.arguments[ 0 ] );
         var field = _processNode( node.arguments[ 1 ] );
-        return ' ' + field + ': { "$in": [ ' + value + ' ] }\n';
+
+        var _in = {};
+        _in[ field ] = {
+            $in: [ value ]
+        };
+        return _in;
     },
     "!": function() {
         throw new Error( '! operator not supported by mongodb' );
     },
     "==": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': ' + _processNode( comparison.value ) + ' ';
+        var _equals = {};
+        _equals[ _processNode( comparison.symbol ) ] = _processNode( comparison.value );
+        return _equals;
     },
     "!=": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': { "$ne": ' + _processNode( comparison.value ) + ' } ';
+        var _nequals = {};
+        _nequals[ _processNode( comparison.symbol ) ] = {
+            $ne: _processNode( comparison.value )
+        };
+        return _nequals;
     },
     "MATCH": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': { "$regex": ' + _processNode( comparison.value ) + ' } ';
+        var _match = {};
+        _match[ _processNode( comparison.symbol ) ] = {
+            $regex: _processNode( comparison.value )
+        };
+        return _match;
     },
     "<": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': { "$lt": ' + _processNode( comparison.value ) + ' } ';
+        var _lt = {};
+        _lt[ _processNode( comparison.symbol ) ] = {
+            $lt: _processNode( comparison.value )
+        };
+        return _lt;
     },    
     "<=": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': { "$lte": ' + _processNode( comparison.value ) + ' } ';
+        var _lte = {};
+        _lte[ _processNode( comparison.symbol ) ] = {
+            $lte: _processNode( comparison.value )
+        };
+        return _lte;
     },    
     ">": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': { "$gt": ' + _processNode( comparison.value ) + ' } ';
+        var _gt = {};
+        _gt[ _processNode( comparison.symbol ) ] = {
+            $gt: _processNode( comparison.value )
+        };
+        return _gt;
     },    
     ">=": function( node ) {
         var comparison = _extractComparison( node );
-        return ' ' + _processNode( comparison.symbol ) + ': { "$gte": ' + _processNode( comparison.value ) + ' } ';
+        var _gte = {};
+        _gte[ _processNode( comparison.symbol ) ] = {
+            $gte: _processNode( comparison.value )
+        };
+        return _gte;
     },
     "EXPRESSION": function( node ) {
-        var result = [];
+        var _expression = {};
         node.arguments.forEach( function( _node ) {
-            result.push( _processNode( _node ) );
+            extend( _expression, _processNode( _node ) );
         } );
-        return ' ' + result.join( ',\n' );        
+        return _expression;
     }
 };
 
@@ -111,6 +147,7 @@ function _processNode( node ) {
 }
 
 function compile( tree ) {
-    var json = '{' + _processNode( tree ) + '}';
-    return JSON.parse( json );
+    var query = {};
+    extend( query, _processNode( tree ) );
+    return query;
 }

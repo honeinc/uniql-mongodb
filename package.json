@@ -1,6 +1,6 @@
 {
   "name": "uniql-mongodb",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Produces MongoDB queries from UniQL ASTs.",
   "main": "src/compiler.js",
   "scripts": {
@@ -25,5 +25,6 @@
     "mocha": "~2.0.1"
   },
   "dependencies": {
+    "extend": "^2.0.0"
   }
 }
