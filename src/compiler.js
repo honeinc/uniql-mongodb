@@ -1,6 +1,7 @@
 'use strict';
 
 var extend = require( 'extend' );
+var ObjectID = require( 'mongodb' ).ObjectID;
 
 module.exports = compile;
 
@@ -8,12 +9,19 @@ function _identity( node ) {
     return node.arguments[ 0 ];
 }
 
+function _isValidObjectId( id ) {
+    return ( id && /^[0-9a-fA-F]{24}$/.test( id ) );
+}
+
 var generators = {
     "NUMBER": function( node ) {
         var value = _identity( node );
         return value.indexOf( '.' ) < 0 ? parseInt( value, 10 ) : parseFloat( value );
     },
-    "STRING": _identity,
+    "STRING": function( node ) {
+        var value = _identity( node );
+        return _isValidObjectId( value ) ? new ObjectID( value ) : value;
+    },
     "SYMBOL": _identity,
     
     "-": function( node ) {
