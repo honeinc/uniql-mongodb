@@ -28,9 +28,11 @@ var generators = {
         return -_identity( node );
     },
     "&&": function( node ) {
-        var _and = {};
+        var _and = {
+            $and: []
+        };
         node.arguments.forEach( function( _node ) {
-           extend( _and, _processNode( _node ) );
+            _and.$and.push( _processNode( _node ) );
         } );
         return _and;
     },
